@@ -120,12 +120,11 @@ segments$SC <- NULL
 
 
 #add all predictors
-for(pred in list.files("~/ma_elephant/R/predictors_car/")) assign(gsub(".csv", "", pred), read.csv(paste0("~/Documents/Master/ma_elephant/R/predictors_car/", pred), stringsAsFactors = F))
+for(pred in list.files("~/ma_elephant/R/predictors_car/")) assign(gsub(".csv", "", pred), read.csv(paste0("~/ma_elephant/R/predictors_car/", pred), stringsAsFactors = F))
 HT_c <- HT_c[,2:3] #remove column with row.names
 COUNT_c <- COUNT_c[,2:3] #remove column with row.names
 REPS_c <- REPS_c[,2:3] #remove column with row.names
-#tif of protected areas does only contain 1 and NA. replace NAs with 0 in protected areas predictor
-PA$max[is.na(PA$max)] <- 0
+
 
 BS<-BS[,c(2:3)]
 DC<-DC[,c(2:3)]
