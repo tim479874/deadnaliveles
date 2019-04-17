@@ -125,23 +125,33 @@ REPS_c <- REPS_c[,2:3] #remove column with row.names
 #tif of protected areas does only contain 1 and NA. replace NAs with 0 in protected areas predictor
 PA$max[is.na(PA$max)] <- 0
 
-HS<-HS[,2:3]
-colnames(HS)<-c("ID","HS")
-BS<-BS[,2:3]
-CA<-CA[,2:3]
-EL<-EL[,2:3]
-LC<-LC[,2:3]
-NDVI<-NDVI[,2:3]
-PA<-PA[,2:3]
-PD<-PD[,2:3]
-ST<-ST[,2:3]
-T<-T[,2:3]
-TC300<-TC300[,2:3]
-TD<-TD[,2:3]
-TP14<-TP14[,2:3]
-TP4M<-TP4M[,2:3]
-TPA<-TPA[,2:3]
-VC<-VC[,2:3]
+BS<-BS[,c(2:3)]
+DC<-DC[,c(2:3)]
+EL<-EL[,c(2:3)]
+LC<-LC[,c(2:3)]
+NDVI<-NDVI[,c(2:3)]
+PA<-PA[,c(2:3)]
+PD<-PD[,c(2:3)]
+T<-T[,c(2:3)]
+TPA<-TPA[,c(2:3)]
+VC<-VC[,c(2:3)]
+TP4M<-TP4M[,c(2:3)]
+TC<-TC[,c(2:3)]
+SL<-SL[,c(2:3)]
+TD<-TD[,c(2:3)]
+DR<-DR[,c(2:3)]
+DW<-DW[,c(2:3)]
+
+colnames(DC)<-c("ID","DC")
+colnames(PD)<-c("ID","PD")
+colnames(COUNT_c)<-c("ID","COUNT_c")
+colnames(EL)<-c("ID","EL")
+colnames(PA)<-c("ID","PA")
+colnames(SL)<-c("ID","SL")
+colnames(TC)<-c("ID","TC")
+colnames(T)<-c("ID","T")
+colnames(VC)<-c("ID","VC")
+colnames(TD)<-c("ID","TD")
 
 
 #combine all predictors + count data, do some unit conversions if necessary
