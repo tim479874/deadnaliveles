@@ -1,3 +1,7 @@
+#########################
+##### load packages #####
+#########################
+
 library(rgdal)
 library(zoo)
 library(stringi)
@@ -8,20 +12,18 @@ library(readr)
 library(sp)
 
 
-
-setwd("~/Documents/Master/ma_elephant/")
-
-httr::set_config(httr::config(http_version = 0))
+### set working directory
+setwd("~/Master/ma_elephant/")
 
 
 rm(list = ls()[which(ls() != "segments")])
-if(!"segments" %in% ls()) segments <- rgdal::readOGR("~/Documents/Master/ma_elephant/segments.shp")
+if(!"segments" %in% ls()) segments <- rgdal::readOGR("~/ma_elephant/segments.shp")
 summary(segments$SC)
 segments$Site <- segments$SC 
 segments$SC <- NULL
 
 ### load all csv files in the predictor folder
-for(pred in list.files("~/Documents/Master/ma_elephant/R/predictors/")) assign(gsub(".csv", "", pred), read_csv(paste0("~/Documents/Master/ma_elephant/R/predictors/", pred)))
+for(pred in list.files("~/ma_elephant/R/predictors/")) assign(gsub(".csv", "", pred), read_csv(paste0("~/Documents/Master/ma_elephant/R/predictors/", pred)))
 
 
 
