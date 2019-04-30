@@ -15,6 +15,8 @@ library(gridExtra)
 #set working directory
 setwd("/ma_elephant/R/illustrations")
 
+#load gam data
+load("/ma_elephant/R/gam_nat.RData")
 
 ########### ########### ########### ########### ###########
     ########### Line Break for long axis labes #########

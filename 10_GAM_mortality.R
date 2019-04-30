@@ -371,3 +371,6 @@ roccurve_gam <- roc(bwa_scaled$COUNT_c ~ bwa_scaled$gam_preds)
 plot(roccurve_gam, ylim=c(0,1))
 text(0.2,0.2,"AUC:")
 text(0.025,0.2,round(auc(bwa_scaled$COUNT_c,bwa_scaled$gam_preds),digits=2))
+
+
+save.image(file="/ma_elephant/R/gam_nat.RData")
