@@ -191,7 +191,7 @@ bwa_scaled[,"y"]<-sp::coordinates(bwa)[,2]
 
 ### define model formula - penalized thin plate regression splines
 gamformucomp<- COUNT_c ~s(DC,bs="ts") +s(EL, bs="ts")+ s(NDVI,bs="ts")+ 
-  s(T,bs="ts")+ s(TD,bs="ts") + s(TP4M,bs="ts")+ 
+  s(T,bs="ts")
   s(TPA,bs="ts") + s(VC,bs="ts")+ s(SQRT_BS,bs="ts")+
   s(SQRT_PD,bs="ts") + s(SQRT_LE,bs="ts")+s(SQRT_SL,bs="ts") +
   s(SQRT_DR,bs="ts") + s(SQRT_TC300,bs="ts") + 
@@ -275,7 +275,7 @@ blocks<-blockCV::spatialBlock(speciesData = bwa2,   selection = "systematic",
 
 ### gam formula for cross validation
 gamformu<- COUNT_c ~s(DC,bs="ts") + s(EL, bs="ts")+ s(NDVI,bs="ts")+ 
-  s(T,bs="ts")+ s(TD,bs="ts") + s(TP4M,bs="ts")+ 
+  s(T,bs="ts")+ 
   s(TPA,bs="ts") + s(VC,bs="ts")+ s(SQRT_BS,bs="ts")+
   s(SQRT_PD,bs="ts") + s(SQRT_LE,bs="ts")+s(SQRT_SL,bs="ts") +
   s(SQRT_DW,bs="ts")+s(SQRT_DR,bs="ts") + s(SQRT_TC300,bs="ts") +
@@ -339,7 +339,7 @@ write.csv(eval_mod_car_gam, "/ma_elephant/R/predictors_car/xval_gam_blocked_8fol
 ### calculate mean AUC
 mean(eval_mod_car_gam[,1], na.rm=TRUE)
 
-# mean AUC  0.6405892
+# mean AUC 0.7057387
 
 
 #########################
