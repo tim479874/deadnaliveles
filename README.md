@@ -10,3 +10,4 @@ Supplementary R-scripts
 
 ## Acknowledgments
 Milles A. (https://github.com/aMilles/GitRepo)
+Jehle J. (https://github.com/JesJehle/earthEngineGrabR)
