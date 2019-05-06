@@ -51,7 +51,9 @@ floor(sqrt(ncol(datale)))
 
 ### number of trees 
 
-gbmb<-gbm(BIN~BS+DR+DC+EL+LC+NDVI+PA+PD+SL+T+TC300+TD+TPA+TP4M+VC+DW+prev_intern,distribution="bernoulli",data=datale,n.trees=20000, interaction.depth = 5, n.cores=2,shrinkage = 0.01)
+gbmb<-gbm(BIN~BS+DR+DC+EL+LC+NDVI+PA+PD+SL+T+TC300+TD+TPA+TP4M+VC+DW+prev_intern,
+          distribution="bernoulli",data=datale,n.trees=20000, interaction.depth = 5,
+          n.cores=2,shrinkage = 0.01)
 
 
 gbm.perf(gbmb ,plot.it = TRUE , method = "OOB")
@@ -104,7 +106,10 @@ colvec<-rainbow(length(unique(datale$Site)))
 eval_mod_gbm<-foreach(i=1:k, .combine="rbind",.verbose=TRUE,.packages=c("mgcv","ranger"))%do%{
   
   ### fit model to train data
-  gbmb<-gbm(BIN~BS+DR+DC+EL+LC+NDVI+PA+PD+SL+T+TC300+TD+TPA+TP4M+VC+DW+prev_intern,distribution="bernoulli",data=datale[fold.nr != i,],n.trees=2200, interaction.depth = 5, n.cores=2,shrinkage = 0.01)
+  gbmb<-gbm(BIN~BS+DR+DC+EL+LC+NDVI+PA+PD+SL+T+TC300+TD+TPA+TP4M+VC+DW+prev_intern,
+            distribution="bernoulli",data=datale[fold.nr != i,],
+            n.trees=2200, interaction.depth = 5,
+            n.cores=2,shrinkage = 0.01)
   ### predict on test/hold out data
   preds<-predict(gbmb,newdata=datale[fold.nr==i,],type="response",n.trees=2200)
   # calculate AUC for hold out data
@@ -120,7 +125,13 @@ eval_mod_gbm<-foreach(i=1:k, .combine="rbind",.verbose=TRUE,.packages=c("mgcv","
 }
 
 # legend with sites for plot
-legend("right", col=colvec, pch=1 , legen=c("Angola, Luengue-Luiana", "Botswana, Nord","Congo, Garamba","Congo, Virunga","Ethopia, Babila","Ethopia, Omo","Kenya, Laikipia","Kenya, Lamu","Kenya, Tsavo","Chad, Chad River","Chad, Zakouma","Burkina Faso, Niger, Benin, Pedjari Complex","Zimbabwe, Matabelleland","Zimbabwe, Sebungwe","Zimbabwe, South East Lowveld","Zimbabwe, Zambezi Valley"),cex=0.75)
+legend("right", col=colvec, pch=1 , legen=c("Angola, Luengue-Luiana", "Botswana, Nord",
+                                            "Congo, Garamba","Congo, Virunga","Ethopia, Babila",
+                                            "Ethopia, Omo","Kenya, Laikipia","Kenya, Lamu","Kenya, Tsavo",
+                                            "Chad, Chad River","Chad, Zakouma",
+                                            "Burkina Faso, Niger, Benin, Pedjari Complex",
+                                            "Zimbabwe, Matabelleland","Zimbabwe, Sebungwe",
+                                            "Zimbabwe, South East Lowveld","Zimbabwe, Zambezi Valley"),cex=0.75)
 
 # add colnames to evaluation matrix
 colnames(eval_mod_gbm)<-c("AUC")
@@ -241,7 +252,8 @@ par(mar=c(5,5,5,2))
 for (i in 1:17){
   
   mfpl<-plot(gbmbfull, i.var=i, type="response", return.grid=TRUE)
-  pfpl_BIG<-plot(mfpl, type="l",col="blue", lwd=2.5, cex.axis = 2.5, cex.lab = 2.5, ylab="Estimated occurrence probability")
+  pfpl_BIG<-plot(mfpl, type="l",col="blue", lwd=2.5, cex.axis = 2.5, cex.lab = 2.5, 
+                 ylab="Estimated occurrence probability")
   print(pfpl_BIG)
 }
 dev.off()
@@ -250,7 +262,7 @@ dev.off()
 #### check full model for spatial autocorrelation ####
 #### #### #### #### #### #### #### #### #### #### #### 
 
-segments_GEE<-rgdal::readOGR(dsn= "~/Documents/Master/ma_elephant",layer= "segments_GEE")
+segments_GEE<-rgdal::readOGR(dsn= "/ma_elephant",layer= "segments_GEE")
 
 
 preddata<-datale
@@ -260,8 +272,8 @@ preddata[,"resi"]<-datale$BIN-plogis(gbmbfull$fit)
 preddata<-merge(segments_GEE, preddata, all.x=TRUE, by="ID")
 
 
-rgdal::writeOGR(preddata,dsn= "~/Documents/Master/ma_elephant/R/",layer= "preddatagbm", driver="ESRI Shapefile")
-preddata<-rgdal::readOGR(dsn="~/Documents/Master/ma_elephant/R/",layer= "preddatagbm")
+rgdal::writeOGR(preddata,dsn= "/ma_elephant/R/",layer= "preddatagbm", driver="ESRI Shapefile")
+preddata<-rgdal::readOGR(dsn="/ma_elephant/R/",layer= "preddatagbm")
 
 
 preddata<-spatialEco::sp.na.omit(preddata)
@@ -274,7 +286,8 @@ preddata<-spatialEco::sp.na.omit(preddata)
 
 AGO_cor<-subset(preddata, Country == "AGO")
 
-corlog_ago<-ncf::correlog(x=sp::coordinates(AGO_cor)[,1],y=sp::coordinates(AGO_cor)[,2],z=AGO_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_ago<-ncf::correlog(x=sp::coordinates(AGO_cor)[,1],y=sp::coordinates(AGO_cor)[,2],
+                          z=AGO_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_ago, ylim=c(-1,1))
 
 
@@ -292,11 +305,15 @@ BWA_cor_2<-BWA_cor[c(6193:12385),]
 
 
 head(BWA_cor$resi)
-corlog_bwa<-ncf::correlog(x=sp::coordinates(BWA_cor_1)[,1],y=sp::coordinates(BWA_cor_1)[,2],z=BWA_cor_1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_bwa<-ncf::correlog(x=sp::coordinates(BWA_cor_1)[,1],
+                          y=sp::coordinates(BWA_cor_1)[,2],
+                          z=BWA_cor_1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_bwa, ylim=c(-1,1))
 
 
-corlog_bwa2<-ncf::correlog(x=sp::coordinates(BWA_cor_2)[,1],y=sp::coordinates(BWA_cor_2)[,2],z=BWA_cor_2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_bwa2<-ncf::correlog(x=sp::coordinates(BWA_cor_2)[,1],
+                           y=sp::coordinates(BWA_cor_2)[,2],
+                           z=BWA_cor_2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_bwa, ylim=c(-1,1))
 
 #########################
@@ -307,7 +324,9 @@ unique(preddata$Country)
 
 COD_cor<-subset(preddata, Country == "COD")
 
-corlog_COD<-ncf::correlog(x=sp::coordinates(COD_cor)[,1],y=sp::coordinates(COD_cor)[,2],z=COD_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_COD<-ncf::correlog(x=sp::coordinates(COD_cor)[,1],
+                          y=sp::coordinates(COD_cor)[,2],
+                          z=COD_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_COD, ylim=c(-1,1))
 
 #########################
@@ -316,7 +335,9 @@ plot(corlog_COD, ylim=c(-1,1))
 
 ETH_cor<-subset(preddata, Country == "ETH")
 
-corlog_ETH<-ncf::correlog(x=sp::coordinates(ETH_cor)[,1],y=sp::coordinates(ETH_cor)[,2],z=ETH_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_ETH<-ncf::correlog(x=sp::coordinates(ETH_cor)[,1],
+                          y=sp::coordinates(ETH_cor)[,2],
+                          z=ETH_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_ETH, ylim=c(-1,1))
 
 #########################
@@ -328,8 +349,12 @@ KEN_cor<-subset(preddata, Country == "KEN")
 
 KEN_cor1<-KEN_cor[c(1:5961),]
 KEN_cor2<-KEN_cor[c(5962:11923),]
-corlog_KEN1<-ncf::correlog(x=sp::coordinates(KEN_cor1)[,1],y=sp::coordinates(KEN_cor1)[,2],z=KEN_cor1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-corlog_KEN2<-ncf::correlog(x=sp::coordinates(KEN_cor2)[,1],y=sp::coordinates(KEN_cor2)[,2],z=KEN_cor2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_KEN1<-ncf::correlog(x=sp::coordinates(KEN_cor1)[,1],
+                           y=sp::coordinates(KEN_cor1)[,2],
+                           z=KEN_cor1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_KEN2<-ncf::correlog(x=sp::coordinates(KEN_cor2)[,1],
+                           y=sp::coordinates(KEN_cor2)[,2],
+                           z=KEN_cor2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 
 plot(corlog_KEN1, ylim=c(-1,1))
 plot(corlog_KEN2, ylim=c(-1,1))
@@ -339,7 +364,9 @@ plot(corlog_KEN2, ylim=c(-1,1))
 
 TCD_cor<-subset(preddata, Country == "TCD")
 
-corlog_TCD<-ncf::correlog(x=sp::coordinates(TCD_cor)[,1],y=sp::coordinates(TCD_cor)[,2],z=TCD_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_TCD<-ncf::correlog(x=sp::coordinates(TCD_cor)[,1],
+                          y=sp::coordinates(TCD_cor)[,2],
+                          z=TCD_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_TCD, ylim=c(-1,1))
 
 #########################
@@ -348,7 +375,9 @@ plot(corlog_TCD, ylim=c(-1,1))
 
 XWA_cor<-subset(preddata, Country == "XWA")
 
-corlog_XWA<-ncf::correlog(x=sp::coordinates(XWA_cor)[,1],y=sp::coordinates(XWA_cor)[,2],z=XWA_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_XWA<-ncf::correlog(x=sp::coordinates(XWA_cor)[,1],
+                          y=sp::coordinates(XWA_cor)[,2],
+                          z=XWA_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_XWA, ylim=c(-1,1))
 
 #########################
@@ -359,8 +388,12 @@ ZWE_cor<-subset(preddata, Country == "ZWE")
 
 ZWE_cor1<-ZWE_cor[c(1:3775),]
 ZWE_cor2<-ZWE_cor[c(3776:7551),]
-corlog_ZWE1<-ncf::correlog(x=sp::coordinates(ZWE_cor1)[,1],y=sp::coordinates(ZWE_cor1)[,2],z=ZWE_cor1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-corlog_ZWE2<-ncf::correlog(x=sp::coordinates(ZWE_cor2)[,1],y=sp::coordinates(ZWE_cor2)[,2],z=ZWE_cor2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_ZWE1<-ncf::correlog(x=sp::coordinates(ZWE_cor1)[,1],
+                           y=sp::coordinates(ZWE_cor1)[,2],
+                           z=ZWE_cor1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+corlog_ZWE2<-ncf::correlog(x=sp::coordinates(ZWE_cor2)[,1],
+                           y=sp::coordinates(ZWE_cor2)[,2],
+                           z=ZWE_cor2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 plot(corlog_ZWE1, ylim=c(-1,1))
 plot(corlog_ZWE2, ylim=c(-1,1))
 
@@ -369,7 +402,6 @@ plot(corlog_ZWE2, ylim=c(-1,1))
 ### colorvector
 colvec<-rainbow(11)
 
-tiff("gbm_SAC.tiff", units="in", width=12, height=7, res=300, pointsize = 18)
 par(col=alpha(colvec[1],0.7),mar=c(5.1,5.1,4.1,2.1)) ### add some transparency
 plot(corlog_ago, xlim=c(0,900),ylim=c(-1,1),col=colvec[1], main="", cex.axis = 2, cex.lab = 2)
 par(new=TRUE, col= alpha(colvec[2], 0.7))
@@ -394,7 +426,6 @@ par(new=TRUE,col=alpha(colvec[11], 0.7))
 plot(corlog_ZWE2, xlim=c(0,900),ylim=c(-1,1), xaxt="n" ,yaxt="n",  xlab="", ylab="",main="")
 box(col="black")
 
-dev.off()
 
 ############################################################
 ################ Map of residuals in space #################
@@ -452,7 +483,7 @@ for (i in 1:length(sites)){
 }
 
 
-pdf("~/Documents/Master/ma_elephant/R/illustrations/comb_2.pdf", onefile = TRUE)
+pdf("/ma_elephant/R/illustrations/comb_2.pdf", onefile = TRUE)
 for (i in seq(length(p))) {
   do.call("grid.arrange", p[[i]])  
 }
@@ -565,9 +596,3 @@ vpb_ <- viewport(width = 1, height = 1, x = 0.5, y = 0.5)  # the larger map
 vpa_ <- viewport(width = 0.28, height = 0.28, x = 0.85, y = 0.85)  # the inset in upper right
 print(fv_gbm_le, vp = vpb_)
 print(bwa_north_africa, vp = vpa_)
-
-
-
-
-
-save.image("~/Documents/Master/ma_elephant/paper+lit/gbm.RData")

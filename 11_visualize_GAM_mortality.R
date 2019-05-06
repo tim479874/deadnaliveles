@@ -13,10 +13,8 @@ library(grid)
 library(gridExtra)
 
 #set working directory
-setwd("/ma_elephant/R/illustrations")
+setwd("~/Documents/Master/ma_elephant/R/illustrations")
 
-#load gam data
-load("/ma_elephant/R/gam_nat.RData")
 
 ########### ########### ########### ########### ###########
     ########### Line Break for long axis labes #########
@@ -49,6 +47,31 @@ points_bwa <- data.frame(bwa_plot_p)
 ### polygons need to be sf object therefore convert spatialpolygonsdataframe to sf
 bwa_sf<-st_as_sf(bwa_plot)
 
+#################################
+###### BWA North <-> Africa #####
+#################################
+
+bwa_north_africa<-  ggplot(data=africa)+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  geom_sf(colour="grey60",fill="grey80") +
+  
+  geom_polygon(data = hullBWA_NOR,  aes(x,y),fill="yellow",color="black")+
+  geom_text(data= gec_points,aes(x=X+0.5, y=Y, label=name_sort),
+            size=3 , color = "black", fontface = "bold", check_overlap = FALSE)+
+  
+  coord_sf(xlim = c(10, 40), ylim = c(-5, -25)) +
+  
+  theme(panel.background = element_rect(fill="white"),
+        axis.line=element_blank(),axis.text.x=element_blank(),
+        axis.text.y=element_blank(),axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text=element_text(size=13),
+        axis.title=element_text(size=13),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))+
+  theme(plot.margin=unit(c(0,0,0,0),"cm"))
+
 
 ###############################
 ########## BWA plot ###########
@@ -56,19 +79,35 @@ bwa_sf<-st_as_sf(bwa_plot)
 ###############################
 
 
-ggplot(data = bots) +
+gam_folds<-ggplot(data = bots) +
   geom_sf(color = "black", fill = "white") +
   xlab("Longitude") + ylab("Latitude") +
-  annotation_scale(location = "tr", width_hint = 0.25) +
-  annotation_north_arrow(location = "tr", which_north = "true", 
-                         pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+  annotation_scale(location = "bl", width_hint = 0.25) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.2, "in"), pad_y = unit(0.2, "in"),
                          style = north_arrow_fancy_orienteering) +
   geom_sf(data= bwa_sf, aes(fill=factor(fold.nr), colour=factor(fold.nr)))+
   scale_color_discrete(aesthetics = c("color","fill"),name="Fold number")+
-  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -20.8)) 
+  geom_point(data = points_bwa[points_bwa$COUNT_c==1,], aes(x = coords.x1, y = coords.x2, shape = "Elephants"),
+             size = 0.35,alpha = 0.4,colour=I("black")) +
+  scale_shape_manual(name="",labels = addline_format(c("Carcass observation")), values = 4)+
+  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -21)) +
+  theme(plot.margin=unit(c(1.5,2,0.2,0.2),"cm"))+
+  theme(panel.background = element_rect(fill="white"),axis.text=element_text(size=14),
+        axis.title=element_text(size=14),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"),
+        legend.position = c(1.1, 0.3))+
+  guides(shape = guide_legend(override.aes = list(size = 2)))
 
 
-ggsave("gam_8_folds.pdf", device = "pdf", dpi=300)
+#### combine 
+grid.newpage()
+vpb_ <- viewport(width = 1, height = 1, x = 0.5, y = 0.5)  # the larger map
+vpa_ <- viewport(width = 0.28, height = 0.28, x = 0.85, y = 0.85)  # the inset in upper right
+print(gam_folds, vp = vpb_)
+print(bwa_north_africa, vp = vpa_)
+
 
 ###############################
 ########## BWA plot ###########
@@ -78,39 +117,58 @@ ggsave("gam_8_folds.pdf", device = "pdf", dpi=300)
 
 ### call the plot
 
-ggplot(data = bots) +
+bwa_fv<-ggplot(data = bots) +
   geom_sf(color = "black", fill = "white") +
   xlab("Longitude") + ylab("Latitude") +
-  annotation_scale(location = "tr", width_hint = 0.25) +
-  annotation_north_arrow(location = "tr", which_north = "true", 
-                         pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+  annotation_scale(location = "bl", width_hint = 0.5) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.2, "in"), pad_y = unit(0.2, "in"),
                          style = north_arrow_fancy_orienteering) +
   geom_sf(data = bwa_sf, aes(fill = fv ,color=fv)) +
   scale_colour_gradient(low = "grey70",high = "darkred",
                         breaks=c(0,0.5,1),labels=c("0","0.5","1") ,
                         limits=c(0,1),guide = "colourbar", 
-                        aesthetics = c("color","fill"),name="Fitted probabilty") + 
+                        aesthetics = c("color","fill"),
+                        name=addline_format(c("Estimated probabilty of carcass occurrence"))) + 
   geom_point(data = points_bwa[points_bwa$COUNT_c==1,], 
-             aes(x = coords.x1, y = coords.x2), size = 0.25, 
-             shape = 4,color="black", alpha = 0.4) +
-  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -20.8)) 
+             aes(x = coords.x1, y = coords.x2, shape = "Elephants"),
+             size = 0.35,alpha = 0.4,colour=I("black")) +
+  scale_shape_manual(name="",labels = addline_format(c("Carcass observation")), values = 4)+
+  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -21)) +
+  theme(plot.margin=unit(c(1.5,2,0.2,0.2),"cm"))+
+  theme(panel.background = element_rect(fill="white"),axis.text=element_text(size=14),
+        axis.title=element_text(size=14),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"),
+        legend.position = c(1.1, 0.3))+
+  guides(shape = guide_legend(override.aes = list(size = 2)))
+  
+  
 
 
-ggsave("gam_fv.pdf", device = "pdf", dpi=300)
+########################################
+########## combine plots ###########
+########################################
 
-### END of BWA plot
+
+grid.newpage()
+vpb_ <- viewport(width = 1, height = 1, x = 0.5, y = 0.5)  # the larger map
+vpa_ <- viewport(width = 0.28, height = 0.28, x = 0.85, y = 0.85)  # the inset in upper right
+print(bwa_fv, vp = vpb_)
+print(bwa_north_africa, vp = vpa_)
+
 
 ###########################
 ### residuals in space ####
 ###########################
 
-ggplot(data = bots) +
+bwa_resi<-ggplot(data = bots) +
   geom_sf(color = "black", fill = "white") +
   xlab("Longitude") + ylab("Latitude") +
   
-  annotation_scale(location = "tr", width_hint = 0.25) +
-  annotation_north_arrow(location = "tr", which_north = "true", 
-                         pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+  annotation_scale(location = "bl", width_hint = 0.25) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.2, "in"), pad_y = unit(0.2, "in"),
                          style = north_arrow_fancy_orienteering) +
   
   
@@ -119,10 +177,25 @@ ggplot(data = bots) +
                          breaks=c(-1,0,1),labels=c("-1","0","1") ,
                          limits=c(-1,1),guide = "colourbar", 
                          aesthetics = c("color","fill"),name="Residuals") +  
-  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -20.7)) 
+  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -21)) +
+theme(plot.margin=unit(c(1.5,2,0.2,0.2),"cm"))+
+  theme(panel.background = element_rect(fill="white"),axis.text=element_text(size=14),
+        axis.title=element_text(size=14),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"),
+        legend.position = c(1.1, 0.3))
 
-ggsave("gam_res.pdf", device = "pdf", dpi=300)
 
+########################################
+########## combine plots ###########
+########################################
+
+
+grid.newpage()
+vpb_ <- viewport(width = 1, height = 1, x = 0.5, y = 0.5)  # the larger map
+vpa_ <- viewport(width = 0.28, height = 0.28, x = 0.85, y = 0.85)  # the inset in upper right
+print(bwa_resi, vp = vpb_)
+print(bwa_north_africa, vp = vpa_)
 
 
 #######################################
@@ -212,13 +285,16 @@ DCm$x<-seq(from= min(efdat_bwa$DC)/1000, to=max(efdat_bwa$DC)/1000, length.out =
 #### effect ggplot
 DCplot<- ggplot(data=DCm)+
   ylim(0, 1)+
-  xlab("Distance to nearest settlement (km])")+
-  ylab("Probability")+
+  xlab("Distance to nearest settlement (km)")+
+  ylab("")+
   geom_ribbon(aes(x=DCm$x, ymax=DCm$upCI, ymin=DCm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=DCm$x, y=DCm$fv),col="grey10")+
   geom_line(aes(x=DCm$x, y=DCm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=DCm$x, y=DCm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=(efdat_bwa$DC/1000)), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=(efdat_bwa$DC/1000)), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 DCplot
 
@@ -274,12 +350,15 @@ ELm$x<-seq(from= min(efdat_bwa$EL), to=max(efdat_bwa$EL), length.out = 200)
 ELplot<- ggplot(data=ELm)+
   ylim(0, 1)+
   xlab("Elevation (m a.s.l.)")+
-  ylab("Probability")+
+  ylab("Estimated probability")+
   geom_ribbon(aes(x=ELm$x, ymax=ELm$upCI, ymin=ELm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=ELm$x, y=ELm$fv),col="grey10")+
   geom_line(aes(x=ELm$x, y=ELm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=ELm$x, y=ELm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$EL), col="grey30", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$EL), col="grey30", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 ELplot
 
@@ -332,13 +411,16 @@ NDVIm$x<-seq(from= min(efdat_bwa$NDVI), to=max(efdat_bwa$NDVI), length.out = 200
 #### effect ggplot
 NDVIplot<- ggplot(data=NDVIm)+
   ylim(0, 1)+
-  xlab("Normalized Difference Vegetation Index")+
-  ylab("Probability")+
+  xlab("NDVI")+
+  ylab("")+
   geom_ribbon(aes(x=NDVIm$x, ymax=NDVIm$upCI, ymin=NDVIm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=NDVIm$x, y=NDVIm$fv),col="grey10")+
   geom_line(aes(x=NDVIm$x, y=NDVIm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=NDVIm$x, y=NDVIm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$NDVI), col="grey30", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$NDVI), col="grey30", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 NDVIplot
 
@@ -392,13 +474,15 @@ Tm$x<-seq(from= min(efdat_bwa$T), to=max(efdat_bwa$T), length.out = 200)
 Tplot<- ggplot(data=Tm)+
   ylim(0, 1)+
   xlab("Annual mean surface air temperature (°C) ")+
-  ylab("Probability")+
+  ylab("")+
   geom_ribbon(aes(x=Tm$x, ymax=Tm$upCI, ymin=Tm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=Tm$x, y=Tm$fv),col="grey10")+
   geom_line(aes(x=Tm$x, y=Tm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=Tm$x, y=Tm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$T), col="grey50", size=0.1, sides="b")
-
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$T), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 Tplot
 
 
@@ -452,13 +536,15 @@ TPAm$x<-seq(from= min(efdat_bwa$TPA), to=max(efdat_bwa$TPA), length.out = 200)
 TPAplot<- ggplot(data=TPAm)+
   ylim(0, 1)+
   xlab("Total annual precipitation (mm)")+
-  ylab("Probability")+
+  ylab("")+
   geom_ribbon(aes(x=TPAm$x, ymax=TPAm$upCI, ymin=TPAm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=TPAm$x, y=TPAm$fv),col="grey10")+
   geom_line(aes(x=TPAm$x, y=TPAm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=TPAm$x, y=TPAm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$TPA), col="grey50", size=0.1, sides="b")
-
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$TPA), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 TPAplot
 
 
@@ -511,13 +597,17 @@ VCm$x<-seq(from= min(efdat_bwa$VC), to=max(efdat_bwa$VC), length.out = 200)
 
 VCplot<- ggplot(data=VCm)+
   ylim(0, 1)+
-  xlab("Percentage of ground covered by herbaceous vegetation")+
-  ylab("Probability")+
+  xlim(0,99)+
+  xlab("Percentage of herbaceous vegetation")+
+  ylab("Estimated probability")+
   geom_ribbon(aes(x=VCm$x, ymax=VCm$upCI, ymin=VCm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=VCm$x, y=VCm$fv),col="grey10")+
   geom_line(aes(x=VCm$x, y=VCm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=VCm$x, y=VCm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$VC), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$VC), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 VCplot
 
@@ -570,13 +660,16 @@ BSm$x<-seq(from= min(efdat_bwa$SQRT_BS), to=max(efdat_bwa$SQRT_BS), length.out =
 
 BSplot<- ggplot(data=BSm)+
   ylim(0, 1)+
-  xlab("Percentage of ground covered by bare soil")+
-  ylab("Probability")+
+  xlab("Percentage of bare soil")+
+  ylab("")+
   geom_ribbon(aes(x=BSm$x, ymax=BSm$upCI, ymin=BSm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=BSm$x, y=BSm$fv),col="grey10")+
   geom_line(aes(x=BSm$x, y=BSm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=BSm$x, y=BSm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_BS), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_BS), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 BSplot
 
@@ -631,12 +724,15 @@ PDm$x<-seq(from= min(efdat_bwa$SQRT_PD), to=max(efdat_bwa$SQRT_PD), length.out =
 PDplot<- ggplot(data=PDm)+
   ylim(0, 1)+
   xlab("Population density (Inhabitants per km²)")+
-  ylab("Probability")+
+  ylab("")+
   geom_ribbon(aes(x=PDm$x, ymax=PDm$upCI, ymin=PDm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=PDm$x, y=PDm$fv),col="grey10")+
   geom_line(aes(x=PDm$x, y=PDm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=PDm$x, y=PDm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_PD), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_PD), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 PDplot
 
@@ -689,12 +785,15 @@ LEm$x<-seq(from= min(efdat_bwa$SQRT_LE), to=max(efdat_bwa$SQRT_LE), length.out =
 LEplot<- ggplot(data=LEm)+
   ylim(0, 1)+
   xlab("Fitted probability of living elephants (P)")+
-  ylab("Probability")+
+  ylab("Estimated probability")+
   geom_ribbon(aes(x=LEm$x, ymax=LEm$upCI, ymin=LEm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=LEm$x, y=LEm$fv),col="grey10")+
   geom_line(aes(x=LEm$x, y=LEm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=LEm$x, y=LEm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_LE), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_LE), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 LEplot
 
@@ -750,12 +849,15 @@ SLm$x<-seq(from= min(efdat_bwa$SQRT_SL), to=max(efdat_bwa$SQRT_SL), length.out =
 SLplot<- ggplot(data=SLm)+
   ylim(0, 1)+
   xlab("Slope (°) ")+
-  ylab("Probability")+
+  ylab("")+
   geom_ribbon(aes(x=SLm$x, ymax=SLm$upCI, ymin=SLm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=SLm$x, y=SLm$fv),col="grey10")+
   geom_line(aes(x=SLm$x, y=SLm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=SLm$x, y=SLm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_SL), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_SL), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 SLplot
 
@@ -809,12 +911,15 @@ DRm$x<-seq(from= min(efdat_bwa$SQRT_DR)/1000, to=max(efdat_bwa$SQRT_DR)/1000, le
 DRplot<- ggplot(data=DRm)+
   ylim(0, 1)+
   xlab("Distance to nearest Road (km)")+
-  ylab("Probability")+
+  ylab("")+
   geom_ribbon(aes(x=DRm$x, ymax=DRm$upCI, ymin=DRm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=DRm$x, y=DRm$fv),col="grey10")+
   geom_line(aes(x=DRm$x, y=DRm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=DRm$x, y=DRm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes((x=efdat_bwa$SQRT_DR/1000)), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes((x=efdat_bwa$SQRT_DR/1000)), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 DRplot
 
@@ -869,13 +974,16 @@ TCm$x<-seq(from= min(efdat_bwa$SQRT_TC300), to=max(efdat_bwa$SQRT_TC300), length
 
 TCplot<- ggplot(data=TCm)+
   ylim(0, 1)+
-  xlab("Percentage of ground covered by tree canopy")+
-  ylab("Probability")+
+  xlab("Percentage of tree canopy")+
+  ylab("")+
   geom_ribbon(aes(x=TCm$x, ymax=TCm$upCI, ymin=TCm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=TCm$x, y=TCm$fv),col="grey10")+
   geom_line(aes(x=TCm$x, y=TCm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=TCm$x, y=TCm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_TC300), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_TC300), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 TCplot
 
@@ -929,12 +1037,15 @@ DWm$x<-seq(from= min(efdat_bwa$SQRT_DW), to=max(efdat_bwa$SQRT_DW), length.out =
 DWplot<- ggplot(data=DWm)+
   ylim(0, 1)+
   xlab("Distance to nearest waterbody (km)")+
-  ylab("Probability")+
+  ylab("Estimated probability")+
   geom_ribbon(aes(x=DWm$x, ymax=DWm$upCI, ymin=DWm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=DWm$x, y=DWm$fv),col="grey10")+
   geom_line(aes(x=DWm$x, y=DWm$lowCI),linetype = 2, col="grey30")+
   geom_line(aes(x=DWm$x, y=DWm$upCI),linetype = 2, col="grey30")+
-  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_DW), col="grey50", size=0.1, sides="b")
+  geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_DW), col="grey50", size=0.1, sides="b")+
+  theme(axis.text=element_text(size=18,colour="black"),
+        axis.title=element_text(size=16),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 DWplot
 
@@ -998,13 +1109,16 @@ nums_of_pa <- c(3160,514,2,2,8707)
 #### effect ggplot ####
 PAplot <- ggplot() + 
   ylim(0, 1)+
-  ylab("Probability")+
+  ylab("Estimated probability")+
   geom_errorbar(data=PAm,aes(x=PAm$x,ymin=PAm$lowCI, ymax=PAm$upCI), width=.1, color="grey50") +
   geom_point(data=PAm, aes(x=PAm$x, y=PAm$fv), color="grey10")+
   scale_x_discrete(name="Protected area type",limits=c("Ib","II","IV","VI","None"),
                    labels=addline_format(c("Wilderness Area","National Park","Species Management Area",
                                            "Protected area with sustainable use of natural resources","None")))+
-  annotate("text", x=PAm$x ,y=1,label=c("8707","3160","2","514","2"))
+  annotate("text", x=PAm$x ,y=1,label=c("8707","3160","2","514","2"))+
+  theme(axis.text=element_text(size=10,colour="black"),
+        axis.title=element_text(size=12),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 
 
@@ -1077,7 +1191,7 @@ nums_of_lc <- nums_of_lc[ nums_of_lc != 0 ]
 
 LCplot <- ggplot() + 
   ylim(0, 1)+
-  ylab("Probability")+
+  ylab("Estimated probability")+
   geom_errorbar(data=LCm,aes(x=LCm$x,ymin=LCm$lowCI, ymax=LCm$upCI), width=.1, color="grey50") +
   geom_point(data=LCm, aes(x=LCm$x, y=LCm$fv), color="grey10")+
   scale_x_discrete(name ="Land cover",
@@ -1085,7 +1199,10 @@ LCplot <- ggplot() +
                                             "Grasslands","Permanent Wetlands","Bare Soil and Rocks",
                                             "Water Bodies")),
                    limits=c("6","7","9","10","11","16","17"))+
-  annotate("text", x=LCm$x ,y=1,label=c("8735","560","175","2253","623","16","23"))
+  annotate("text", x=LCm$x ,y=1,label=c("8735","560","175","2253","623","16","23"))+
+  theme(axis.text=element_text(size=10,colour="black"),
+        axis.title=element_text(size=12),
+        panel.background = element_rect(fill = 'white', colour = 'white'))
 
 LCplot
 
@@ -1095,13 +1212,12 @@ LCplot
 ###### combine all continous effect plots to one pdf ######## 
 #############################################################  
 
-tiff("cond_eff_high_res.tiff", units="in", width=20, height=20, res=300, pointsize = 24)
+
 
 grid.arrange(ELplot,  SLplot, NDVIplot ,
              TCplot, VCplot , BSplot, 
              Tplot , TPAplot, DWplot ,
              DCplot, DRplot,  PDplot,  LEplot  )
-dev.off()          
 
 ###############################################################
 ###### combine all categorical effect plots to one pdf ########
@@ -1119,28 +1235,28 @@ grid.draw(g)
 ###### 4 patches for continous effect plots  ########
 #####################################################
 
-tiff("cond_eff_high_res_1_4_n.tiff", units="in", width=10, height=10, res=300, pointsize = 24)
+
 grid.arrange(ELplot,SLplot, NDVIplot ,
              TCplot)
-dev.off()  
 
-tiff("cond_eff_high_res_5_8_n.tiff", units="in", width=10, height=10, res=300, pointsize = 24)
+
+
 grid.arrange(VCplot , BSplot, 
              Tplot,TPAplot)
-dev.off()              
+           
 
-tiff("cond_eff_high_res_9_12_n.tiff", units="in", width=10, height=10, res=300, pointsize = 24) 
-grid.arrange( DWplot , DCplot,DRplot,  PDplot)
-dev.off() 
 
-tiff("cond_eff_LEplot_n.tiff", units="in", width=10, height=10, res=300, pointsize = 24)
+grid.arrange( DWplot , DCplot,DRplot, 
+              PDplot)
+
+
+
 grid.arrange( LEplot)
-dev.off() 
 
-tiff("cond_eff_cat1_n.tiff", units="in", width=7, height=7, res=300, pointsize = 36)
+
+
 PAplot
-dev.off() 
 
-tiff("cond_eff_cat2_n.tiff", units="in", width=7, height=7, res=300, pointsize = 36)
+
+
 LCplot
-dev.off() 

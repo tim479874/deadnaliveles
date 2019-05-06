@@ -2,7 +2,6 @@
 ##### load packages #####
 #########################
 
-
 library(foreach)
 library(doMC)
 library(mgcv)
@@ -208,6 +207,15 @@ summary(carc_mod)
 ### add fitted values to dataframe
 bwa_scaled["fv"]<-carc_mod$fitted.values
 
+##########################
+##### DHARMa Plot ########
+##########################
+
+simulationOutput_carcs <- simulateResiduals(fittedModel = carc_mod, refit = TRUE, n=50)
+
+plot(simulationOutput_carcs)
+
+
 #####################################
 ######## Check for SAC ##############
 #####################################
@@ -231,14 +239,12 @@ corlog2<-ncf::correlog(x=sp::coordinates(BWA_2)[,1],y=sp::coordinates(BWA_2)[,2]
 
 
 ### call plot
-tiff("bwa_SAC.tiff", units="in", width=12, height=7, res=300, pointsize = 12)
 par(col=alpha(colvec[1],0.7)) ### add some transparency
 plot(corlog1, xlim=c(0,500),ylim=c(-1,1),col=colvec[1], main="")
 par(new=TRUE, col= alpha(colvec[2], 0.7))
 plot(corlog2, xlim=c(0,500),ylim=c(-1,1), xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
 box(col="black")
 
-dev.off()
 
 
 #################################
@@ -258,10 +264,6 @@ text(0.025,0.2,round(auc(bwa_scaled$COUNT_c,carc_mod$fitted.values),digits=2))
 concurvity(carc_mod,full=TRUE)
 ### selective concurvity for all smooths
 concurvity(carc_mod,full=FALSE)
-
-### call qqplot and further diagnostic plots
-par(mfrow=c(2,2))
-gam.check(carc_mod)
 
 ######################
 ####### GAM CV #######
@@ -371,6 +373,3 @@ roccurve_gam <- roc(bwa_scaled$COUNT_c ~ bwa_scaled$gam_preds)
 plot(roccurve_gam, ylim=c(0,1))
 text(0.2,0.2,"AUC:")
 text(0.025,0.2,round(auc(bwa_scaled$COUNT_c,bwa_scaled$gam_preds),digits=2))
-
-
-save.image(file="/ma_elephant/R/gam_nat.RData")

@@ -29,7 +29,6 @@ library(gbm)
 library(scales)
 
 
-
 ##################################
 ##### set working directory ######
 ##################################
@@ -159,7 +158,7 @@ corlog5<-ncf::correlog(x=sp::coordinates(hp_cor_5)[,1],
                        increment=10, resamp=20)
 
 ### call plot
-tiff("hp_SAC.tiff", units="in", width=12, height=7, res=300, pointsize = 12)
+
 par(col=alpha("red",0.7)) ### add some transparency
 plot(corlog1, xlim=c(0,400),ylim=c(-1,1),col="red", main="")
 par(new=TRUE, col= alpha("blue", 0.7))
@@ -172,7 +171,7 @@ par(new=TRUE, col= alpha("orange", 0.7))
 plot(corlog5, xlim=c(0,400),ylim=c(-1,1), xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
 box(col="black")
 
-dev.off()
+
 
 
 #################################
@@ -320,6 +319,3 @@ length(data_c$ID)
 
 length(data[data$Site=="BWA_NOR",]$ID)
 ####12385
-
-
-save.image(file="/ma_elephant/R/gam_pike.RData")
