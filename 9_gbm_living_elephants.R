@@ -225,23 +225,24 @@ ggplot(gbmsum,aes(x=variables,y=rel.inf, fill=rel.inf))+
   ylab("Relative Influence")+
   xlab("Variables")+
   geom_bar(stat="identity")+
-  scale_fill_gradient(low = "blue",high="darkred", breaks=c(0,35))
+  scale_fill_gradient(low = "blue",high="darkred", breaks=c(0,35))+
+  theme(axis.text=element_text(size=20,colour = "black"),
+        axis.title=element_text(size=20,colour = "black"),
+        axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 #####################################
 ###### conditional effect plots #####
 #####################################
 
-### call pdf device
 pdf("conditional_eff_gbm.pdf")
-par(mfrow=c(17,1))
 
-
-### loop through all predictors
+par(mar=c(5,5,5,2))
 for (i in 1:17){
   
-  mfpl<-plot(gbmbfull, i.var=i, lwd = 2, type="response")
-  print(mfpl)
+  mfpl<-plot(gbmbfull, i.var=i, type="response", return.grid=TRUE)
+  pfpl_BIG<-plot(mfpl, type="l",col="blue", lwd=2.5, cex.axis = 2.5, cex.lab = 2.5, ylab="Estimated occurrence probability")
+  print(pfpl_BIG)
 }
 dev.off()
 
@@ -249,7 +250,7 @@ dev.off()
 #### check full model for spatial autocorrelation ####
 #### #### #### #### #### #### #### #### #### #### #### 
 
-segments_GEE<-rgdal::readOGR(dsn= "/Master/ma_elephant",layer= "segments_GEE")
+segments_GEE<-rgdal::readOGR(dsn= "~/Documents/Master/ma_elephant",layer= "segments_GEE")
 
 
 preddata<-datale
@@ -259,8 +260,8 @@ preddata[,"resi"]<-datale$BIN-plogis(gbmbfull$fit)
 preddata<-merge(segments_GEE, preddata, all.x=TRUE, by="ID")
 
 
-rgdal::writeOGR(preddata,dsn= "/Master/ma_elephant/R/",layer= "preddatagbm", driver="ESRI Shapefile")
-preddata<-rgdal::readOGR(dsn="/Master/ma_elephant/R/",layer= "preddatagbm")
+rgdal::writeOGR(preddata,dsn= "~/Documents/Master/ma_elephant/R/",layer= "preddatagbm", driver="ESRI Shapefile")
+preddata<-rgdal::readOGR(dsn="~/Documents/Master/ma_elephant/R/",layer= "preddatagbm")
 
 
 preddata<-spatialEco::sp.na.omit(preddata)
@@ -271,11 +272,11 @@ preddata<-spatialEco::sp.na.omit(preddata)
 ###### SAC for AGO ######
 #########################
 
-#subsett to country
 AGO_cor<-subset(preddata, Country == "AGO")
 
-#calculate Morans I
 corlog_ago<-ncf::correlog(x=sp::coordinates(AGO_cor)[,1],y=sp::coordinates(AGO_cor)[,2],z=AGO_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+plot(corlog_ago, ylim=c(-1,1))
+
 
 
 
@@ -292,11 +293,11 @@ BWA_cor_2<-BWA_cor[c(6193:12385),]
 
 head(BWA_cor$resi)
 corlog_bwa<-ncf::correlog(x=sp::coordinates(BWA_cor_1)[,1],y=sp::coordinates(BWA_cor_1)[,2],z=BWA_cor_1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-
+plot(corlog_bwa, ylim=c(-1,1))
 
 
 corlog_bwa2<-ncf::correlog(x=sp::coordinates(BWA_cor_2)[,1],y=sp::coordinates(BWA_cor_2)[,2],z=BWA_cor_2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-
+plot(corlog_bwa, ylim=c(-1,1))
 
 #########################
 ###### SAC for COD ######
@@ -307,7 +308,7 @@ unique(preddata$Country)
 COD_cor<-subset(preddata, Country == "COD")
 
 corlog_COD<-ncf::correlog(x=sp::coordinates(COD_cor)[,1],y=sp::coordinates(COD_cor)[,2],z=COD_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-
+plot(corlog_COD, ylim=c(-1,1))
 
 #########################
 ###### SAC for ETH ######
@@ -316,7 +317,7 @@ corlog_COD<-ncf::correlog(x=sp::coordinates(COD_cor)[,1],y=sp::coordinates(COD_c
 ETH_cor<-subset(preddata, Country == "ETH")
 
 corlog_ETH<-ncf::correlog(x=sp::coordinates(ETH_cor)[,1],y=sp::coordinates(ETH_cor)[,2],z=ETH_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-
+plot(corlog_ETH, ylim=c(-1,1))
 
 #########################
 ###### SAC for KEN ######
@@ -330,7 +331,8 @@ KEN_cor2<-KEN_cor[c(5962:11923),]
 corlog_KEN1<-ncf::correlog(x=sp::coordinates(KEN_cor1)[,1],y=sp::coordinates(KEN_cor1)[,2],z=KEN_cor1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 corlog_KEN2<-ncf::correlog(x=sp::coordinates(KEN_cor2)[,1],y=sp::coordinates(KEN_cor2)[,2],z=KEN_cor2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 
-
+plot(corlog_KEN1, ylim=c(-1,1))
+plot(corlog_KEN2, ylim=c(-1,1))
 #########################
 ###### SAC for TCD ######
 #########################
@@ -338,7 +340,7 @@ corlog_KEN2<-ncf::correlog(x=sp::coordinates(KEN_cor2)[,1],y=sp::coordinates(KEN
 TCD_cor<-subset(preddata, Country == "TCD")
 
 corlog_TCD<-ncf::correlog(x=sp::coordinates(TCD_cor)[,1],y=sp::coordinates(TCD_cor)[,2],z=TCD_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-
+plot(corlog_TCD, ylim=c(-1,1))
 
 #########################
 ###### SAC for XWA ######
@@ -347,7 +349,7 @@ corlog_TCD<-ncf::correlog(x=sp::coordinates(TCD_cor)[,1],y=sp::coordinates(TCD_c
 XWA_cor<-subset(preddata, Country == "XWA")
 
 corlog_XWA<-ncf::correlog(x=sp::coordinates(XWA_cor)[,1],y=sp::coordinates(XWA_cor)[,2],z=XWA_cor$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
-
+plot(corlog_XWA, ylim=c(-1,1))
 
 #########################
 ###### SAC for  ZWE ######
@@ -359,15 +361,17 @@ ZWE_cor1<-ZWE_cor[c(1:3775),]
 ZWE_cor2<-ZWE_cor[c(3776:7551),]
 corlog_ZWE1<-ncf::correlog(x=sp::coordinates(ZWE_cor1)[,1],y=sp::coordinates(ZWE_cor1)[,2],z=ZWE_cor1$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
 corlog_ZWE2<-ncf::correlog(x=sp::coordinates(ZWE_cor2)[,1],y=sp::coordinates(ZWE_cor2)[,2],z=ZWE_cor2$resi, latlon=TRUE,na.rm=TRUE, increment=10, resamp=20)
+plot(corlog_ZWE1, ylim=c(-1,1))
+plot(corlog_ZWE2, ylim=c(-1,1))
 
 ##### combine all correlograms in one plot
 
 ### colorvector
 colvec<-rainbow(11)
 
-tiff("gbm_SAC.tiff", units="in", width=12, height=7, res=300, pointsize = 12)
-par(col=alpha(colvec[1],0.7)) ### add some transparency
-plot(corlog_ago, xlim=c(0,900),ylim=c(-1,1),col=colvec[1], main="")
+tiff("gbm_SAC.tiff", units="in", width=12, height=7, res=300, pointsize = 18)
+par(col=alpha(colvec[1],0.7),mar=c(5.1,5.1,4.1,2.1)) ### add some transparency
+plot(corlog_ago, xlim=c(0,900),ylim=c(-1,1),col=colvec[1], main="", cex.axis = 2, cex.lab = 2)
 par(new=TRUE, col= alpha(colvec[2], 0.7))
 plot(corlog_bwa, xlim=c(0,900),ylim=c(-1,1), xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
 par(new=TRUE, col=alpha(colvec[3], 0.7))
@@ -396,8 +400,22 @@ dev.off()
 ################ Map of residuals in space #################
 ############################################################
 
+## add names of the sites
 
-### vector with unique sites to loop through
+sites
+names_sites<-c("Angola Luengue-Luiana","Botswana North","Congo Garamba","Congo Virunga",
+               "Ethopia Babile","Ethopia Omo","Kenya Laikipia","Kenya Lamu",
+               "Kenya Tsavo","Chad Chad River","Chad Zakouma","Burkina Faso, Niger, Benin Pendjari-Complex",
+               "Zimbabwe Matabeleland","Zimbabwe Sebungwe","Zimbabwe Sout East Lowveld",
+               "Zimbabwe Zambezi Valley")
+sfpreddt["NAME_SITE"]<-rep(NA, length(sfpreddt$ID))
+for (i in 1:length(unique(sites))){
+  
+  sfpreddt$NAME_SITE[sfpreddt$Site==sites[i]]<-names_sites[i]
+}
+
+table(sfpreddt$NAME_SITE,sfpreddt$Site)
+
 sites<-unique(preddata$Site)
 
 #### convert to sf obejct for ggplot
@@ -405,31 +423,38 @@ sites<-unique(preddata$Site)
 sfpreddt<-st_as_sf(preddata)
 
 
-### call empty list to store the plots
+
 p<-list()
 for (i in 1:length(sites)){
-  p[[i]] <- list() ### nest a new list in the called list
-  p[[i]][[1]] <- ggplot() +  ### call plot and store in the nested list
-    ggtitle(sites[i])+
+  p[[i]] <- list()
+  p[[i]][[1]] <- ggplot() +
+    ggtitle(names_sites[i])+
+    geom_sf(data = sfpreddt[sfpreddt$Site==sites[i],], aes(fill = resi ,color= resi)) + 
+    scale_colour_gradient2(low = "red",mid="grey80",high = "blue", breaks=c(-1,0,1),guide=FALSE) + 
+    scale_fill_gradient2(low = "red",mid="grey80",high = "blue", breaks=c(-1,0,1),name="Residuals") +
+    xlab("Longitude") + ylab("Latitude") +
+    
+    
     annotation_scale(location = "tr", width_hint = 0.25) +
     annotation_north_arrow(location = "tr", which_north = "true", 
                            pad_x = unit(0.1, "in"), pad_y = unit(0.25, "in"),
                            style = north_arrow_fancy_orienteering) +
     
-    geom_sf(data = sfpreddt[sfpreddt$Site==sites[i],], aes(fill = resi ,color= resi)) + 
-    scale_colour_gradient2(low = "red",mid="grey80",high = "blue", breaks=c(-1,0,1)) + 
-    scale_fill_gradient2(low = "red",mid="grey80",high = "blue", breaks=c(-1,0,1)) +
-    xlab("Longitude") + ylab("Latitude") 
+    theme(panel.background = element_rect(fill="white"),
+          axis.text=element_text(size=16),
+          axis.title=element_text(size=16),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"))
   
   
   
   
 }
 
-### call pdf
-pdf("/Master/ma_elephant/R/illustrations/comb.pdf", onefile = TRUE)
+
+pdf("~/Documents/Master/ma_elephant/R/illustrations/comb_2.pdf", onefile = TRUE)
 for (i in seq(length(p))) {
-  do.call("grid.arrange", p[[i]])  ### loop through the lists and arrange each plot on a new pdf site
+  do.call("grid.arrange", p[[i]])  
 }
 dev.off()
 
@@ -438,6 +463,17 @@ dev.off()
 ##########################################
 ### Visualize Living Elephants in BWA ####
 ##########################################
+
+
+########### ########### ########### ########### ###########
+########### Line Break for long axis labes #########
+########### ########### ########### ########### ########### 
+
+addline_format <- function(x,...){
+  gsub('\\s','\n',x)
+}
+
+
 
 ### subset data to Bwa
 preddata_bots_le<-preddata[preddata$Country=="BWA",]
@@ -462,19 +498,76 @@ bwa_sf_le<-st_as_sf(preddata_bots_le)
 ##### call plot #####
 #####################
 
-ggplot(data = bots) +
+fv_gbm_le<-ggplot(data = bots) +
   geom_sf(color = "black", fill = "white") +
   xlab("Longitude") + ylab("Latitude") +
-  annotation_scale(location = "tr", width_hint = 0.5) +
-  annotation_north_arrow(location = "tr", which_north = "true", 
-                         pad_x = unit(0.75, "in"), pad_y = unit(0.5, "in"),
+  annotation_scale(location = "bl", width_hint = 0.5) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.2, "in"), pad_y = unit(0.2, "in"),
                          style = north_arrow_fancy_orienteering) +
   geom_sf(data = bwa_sf_le, aes(fill = fv ,color=fv)) +
-  scale_colour_gradient(low = "grey70",high = "blue", breaks=c(0,1),labels=c("0","1") ,limits=c(0,1),guide = "colourbar", aesthetics = c("fill","colour"),name="Fitted probabilty") + 
- geom_point(data = points_bwa_le[points_bwa_le$BIN==1,], aes(x = coords.x1, y = coords.x2), 
-             colour="black",size = 0.25, shape = 4, alpha = 0.4) +
-  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -20.8)) 
+  scale_colour_gradient(low = "grey70",high = "blue", breaks=c(0,1),labels=c("0","1") ,limits=c(0,1),guide = "colourbar", aesthetics = c("fill","colour"),name=addline_format(c("Estimated probabilty of elephant occurrence"))) + 
+  geom_point(data = points_bwa_le[points_bwa_le$BIN==1,], aes(x = coords.x1, y = coords.x2, shape = "Elephants"),
+             size = 0.35,alpha = 0.4,colour=I("black")) +
+  scale_shape_manual(name="",labels = addline_format(c("Elephant observation")), values = 4)+
+  coord_sf(xlim = c(21.9, 26.5), ylim = c(-17.75, -21)) +
+  theme(plot.margin=unit(c(1.5,2,0.2,0.2),"cm"))+
+  theme(panel.background = element_rect(fill="white"),axis.text=element_text(size=14),
+        axis.title=element_text(size=14),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"),
+        legend.position = c(1.1, 0.3))+
+  guides(shape = guide_legend(override.aes = list(size = 2)))
 
-ggsave("gbm_fv.pdf", device = "pdf", dpi=300)
 
-save.image("/ma_elephant/gbm_living_elephants_SDM.RData")
+
+
+
+
+#################################
+###### BWA North <-> Africa #####
+#################################
+
+
+
+bwa_north_africa<-  ggplot(data=africa)+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  geom_sf(colour="grey60",fill="grey80") +
+  
+  geom_polygon(data = hullBWA_NOR,  aes(x,y),fill="yellow",color="black")+
+  geom_text(data= gec_points,aes(x=X+0.5, y=Y, label=name_sort),
+            size=3 , color = "black", fontface = "bold", check_overlap = FALSE)+
+  
+  coord_sf(xlim = c(10, 40), ylim = c(-5, -25)) +
+  
+  theme(panel.background = element_rect(fill="white"),
+        axis.line=element_blank(),axis.text.x=element_blank(),
+        axis.text.y=element_blank(),axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text=element_text(size=13),
+        axis.title=element_text(size=13),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))+
+  theme(plot.margin=unit(c(0,0,0,0),"cm"))
+
+
+
+########################################
+########## combine plots ###########
+########################################
+
+
+
+
+grid.newpage()
+vpb_ <- viewport(width = 1, height = 1, x = 0.5, y = 0.5)  # the larger map
+vpa_ <- viewport(width = 0.28, height = 0.28, x = 0.85, y = 0.85)  # the inset in upper right
+print(fv_gbm_le, vp = vpb_)
+print(bwa_north_africa, vp = vpa_)
+
+
+
+
+
+save.image("~/Documents/Master/ma_elephant/paper+lit/gbm.RData")
