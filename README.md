@@ -9,5 +9,5 @@ Supplementary R-scripts
 **Tim Siebert** 
 
 ## Acknowledgments
-Milles A. (https://github.com/aMilles/GitRepo)
+Milles A. (https://github.com/aMilles/GitRepo) \
 Jehle J. (https://github.com/JesJehle/earthEngineGrabR)
