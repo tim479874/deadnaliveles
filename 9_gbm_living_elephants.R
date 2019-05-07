@@ -152,7 +152,7 @@ all_preds_cv_gbm <-unlist(all.preds)
 
 
 ### fit glm/gam with natural spline of preds vs obs and plot with 95% CI
-calibrate.plot(datale$BIN,all_preds_cv_gbm)
+calibrate.plot(datale$BIN,all_preds_cv_gbm,shade.col="grey50")
 
 #####################
 #### preds vs obs ### old

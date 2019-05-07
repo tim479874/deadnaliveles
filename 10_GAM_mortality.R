@@ -349,8 +349,9 @@ mean(eval_mod_car_gam[,1], na.rm=TRUE)
 #########################
 
 
-calibrate.plot(bwa_scaled$COUNT_c,bwa_scaled$gam_preds)
+calibrate.plot(bwa_scaled$COUNT_c,bwa_scaled$gam_preds,shade.col="grey50")
 
+?calibrate.plot
 
 
 #####################
