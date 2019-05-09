@@ -97,7 +97,8 @@ gam_folds<-ggplot(data = bots) +
         axis.title=element_text(size=14),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
-        legend.position = c(1.1, 0.3))+
+        legend.position = c(1.1, 0.3),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))+
   guides(shape = guide_legend(override.aes = list(size = 2)))
 
 
@@ -140,7 +141,8 @@ bwa_fv<-ggplot(data = bots) +
         axis.title=element_text(size=14),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
-        legend.position = c(1.1, 0.3))+
+        legend.position = c(1.1, 0.3),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))+
   guides(shape = guide_legend(override.aes = list(size = 2)))
   
   
@@ -183,7 +185,8 @@ theme(plot.margin=unit(c(1.5,2,0.2,0.2),"cm"))+
         axis.title=element_text(size=14),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
-        legend.position = c(1.1, 0.3))
+        legend.position = c(1.1, 0.3),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 
 ########################################
@@ -201,6 +204,15 @@ print(bwa_north_africa, vp = vpa_)
 #######################################
 ############ Effect plots #############
 #######################################
+
+###################################
+### get family to backtransform ###
+###################################
+
+fam<-family(carc_mod)
+ilink<-fam$linkinv
+
+
 
 ##############################
 ##### get unscaled data ######
@@ -258,24 +270,20 @@ nwdtdc<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-DC_fit<-predict(carc_mod, newdata=nwdtdc,type="response", se.fit=TRUE)
+DC_fit<-predict(carc_mod, newdata=nwdtdc, se.fit=TRUE)
+
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-DCm<-data.frame(fv=DC_fit$fit, lowCI=NA,upCI=NA, x=NA)
+DCm<-data.frame(fv=ilink(DC_fit$fit), lowCI=NA,upCI=NA, x=NA)
+
 
 
 ### 0.05 CI
-DCm$lowCI<-DC_fit$fit-(2*DC_fit$se.fit)
-
-### set all values that are negativ to NA
-DCm[DCm$lowCI<0,]$lowCI <- 0
+DCm$lowCI<-ilink(DC_fit$fit-(2*DC_fit$se.fit))
 
 ### 0.95 CI
-DCm$upCI<-DC_fit$fit+(2*DC_fit$se.fit)
+DCm$upCI<-ilink(DC_fit$fit+(2*DC_fit$se.fit))
 
-### ### set all values greater than one to NA
-
-DCm[DCm$upCI>1,]$upCI <- 1
 
 
 ### get unscaled x axis
@@ -294,7 +302,9 @@ DCplot<- ggplot(data=DCm)+
   geom_rug(data=efdat_bwa, aes(x=(efdat_bwa$DC/1000)), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 DCplot
 
@@ -325,23 +335,17 @@ nwdtel<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-EL_fit<-predict(carc_mod, newdata=nwdtel,type="response", se.fit=TRUE)
+EL_fit<-predict(carc_mod, newdata=nwdtel, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-ELm<-data.frame(fv=EL_fit$fit, lowCI=NA,upCI=NA, x=NA)
+ELm<-data.frame(fv=ilink(EL_fit$fit), lowCI=NA,upCI=NA, x=NA)
 
 ### 0.05 CI
-ELm$lowCI<-EL_fit$fit-(2*EL_fit$se.fit)
-
-### set all values that are negativ to NA
-ELm[ELm$lowCI<0,]$lowCI <- 0
+ELm$lowCI<-ilink(EL_fit$fit-(2*EL_fit$se.fit))
 
 ### 0.95 CI
-ELm$upCI<-EL_fit$fit+(2*EL_fit$se.fit)
+ELm$upCI<-ilink(EL_fit$fit+(2*EL_fit$se.fit))
 
-### ### set all values greater than one to NA
-
-ELm[ELm$upCI>1,]$upCI <- 1
 
 ### get unscaled x axis
 ELm$x<-seq(from= min(efdat_bwa$EL), to=max(efdat_bwa$EL), length.out = 200)
@@ -358,7 +362,9 @@ ELplot<- ggplot(data=ELm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$EL), col="grey30", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 ELplot
 
@@ -387,23 +393,17 @@ nwdtndvi<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-NDVI_fit<-predict(carc_mod, newdata=nwdtndvi,type="response", se.fit=TRUE)
+NDVI_fit<-predict(carc_mod, newdata=nwdtndvi, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-NDVIm<-data.frame(fv=NDVI_fit$fit, lowCI=NA,upCI=NA,x=NA)
+NDVIm<-data.frame(fv=ilink(NDVI_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-NDVIm$lowCI<-NDVI_fit$fit-(2*NDVI_fit$se.fit)
+NDVIm$lowCI<-ilink(NDVI_fit$fit-(2*NDVI_fit$se.fit))
 
-### set all values that are negativ to NA
-NDVIm[NDVIm$lowCI<0,]$lowCI <- 0
 
 ### 0.95 CI
-NDVIm$upCI<-NDVI_fit$fit+(2*NDVI_fit$se.fit)
-
-### ### set all values greater than one to NA
-
-NDVIm[NDVIm$upCI>1,]$upCI <- 1
+NDVIm$upCI<-ilink(NDVI_fit$fit+(2*NDVI_fit$se.fit))
 
 ### get unscaled x axis
 NDVIm$x<-seq(from= min(efdat_bwa$NDVI), to=max(efdat_bwa$NDVI), length.out = 200)
@@ -420,7 +420,9 @@ NDVIplot<- ggplot(data=NDVIm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$NDVI), col="grey30", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 NDVIplot
 
@@ -450,22 +452,17 @@ nwdtt<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-T_fit<-predict(carc_mod, newdata=nwdtt,type="response", se.fit=TRUE)
+T_fit<-predict(carc_mod, newdata=nwdtt, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-Tm<-data.frame(fv=T_fit$fit, lowCI=NA,upCI=NA,x=NA)
+Tm<-data.frame(fv=ilink(T_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-Tm$lowCI<-T_fit$fit-(2*T_fit$se.fit)
+Tm$lowCI<-ilink(T_fit$fit-(2*T_fit$se.fit))
 
-### set all values that are negativ to NA
-Tm[Tm$lowCI<0,]$lowCI <- 0
 
 ### 0.95 CI
-Tm$upCI<-T_fit$fit+(2*T_fit$se.fit)
-
-### ### set all values greater than one to NA
-Tm[Tm$upCI>1,]$upCI <- 1
+Tm$upCI<-ilink(T_fit$fit+(2*T_fit$se.fit))
 
 ### get unscaled x axis
 Tm$x<-seq(from= min(efdat_bwa$T), to=max(efdat_bwa$T), length.out = 200)
@@ -482,7 +479,9 @@ Tplot<- ggplot(data=Tm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$T), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 Tplot
 
 
@@ -511,22 +510,17 @@ nwdttpa<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-TPA_fit<-predict(carc_mod, newdata=nwdttpa,type="response", se.fit=TRUE)
+TPA_fit<-predict(carc_mod, newdata=nwdttpa, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-TPAm<-data.frame(fv=TPA_fit$fit, lowCI=NA,upCI=NA, x=NA)
+TPAm<-data.frame(fv=ilink(TPA_fit$fit), lowCI=NA,upCI=NA, x=NA)
 
 ### 0.05 CI
-TPAm$lowCI<-TPA_fit$fit-(2*TPA_fit$se.fit)
-
-### set all values that are negativ to NA
-TPAm[TPAm$lowCI<0,]$lowCI <- 0
+TPAm$lowCI<-ilink(TPA_fit$fit-(2*TPA_fit$se.fit))
 
 ### 0.95 CI
-TPAm$upCI<-TPA_fit$fit+(2*TPA_fit$se.fit)
+TPAm$upCI<-ilink(TPA_fit$fit+(2*TPA_fit$se.fit))
 
-### ### set all values greater than one to NA
-TPAm[TPAm$upCI>1,]$upCI <- 1
 
 ### get unscaled x axis
 TPAm$x<-seq(from= min(efdat_bwa$TPA), to=max(efdat_bwa$TPA), length.out = 200)
@@ -544,7 +538,9 @@ TPAplot<- ggplot(data=TPAm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$TPA), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 TPAplot
 
 
@@ -573,22 +569,18 @@ nwdtvc<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-VC_fit<-predict(carc_mod, newdata=nwdtvc,type="response", se.fit=TRUE)
+VC_fit<-predict(carc_mod, newdata=nwdtvc, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-VCm<-data.frame(fv=VC_fit$fit, lowCI=NA,upCI=NA,X=NA)
+VCm<-data.frame(fv=ilink(VC_fit$fit), lowCI=NA,upCI=NA,X=NA)
 
 ### 0.05 CI
-VCm$lowCI<-VC_fit$fit-(2*VC_fit$se.fit)
-
-### set all values that are negativ to NA
-VCm[VCm$lowCI<0,]$lowCI <- 0
+VCm$lowCI<-ilink(VC_fit$fit-(2*VC_fit$se.fit))
 
 ### 0.95 CI
-VCm$upCI<-VC_fit$fit+(2*VC_fit$se.fit)
+VCm$upCI<-ilink(VC_fit$fit+(2*VC_fit$se.fit))
 
-### ### set all values greater than one to NA
-VCm[VCm$upCI>1,]$upCI <- 1
+
 
 ### get unscaled x axis
 VCm$x<-seq(from= min(efdat_bwa$VC), to=max(efdat_bwa$VC), length.out = 200)
@@ -607,7 +599,9 @@ VCplot<- ggplot(data=VCm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$VC), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 VCplot
 
@@ -636,22 +630,17 @@ nwdtbs<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-BS_fit<-predict(carc_mod, newdata=nwdtbs,type="response", se.fit=TRUE)
+BS_fit<-predict(carc_mod, newdata=nwdtbs, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-BSm<-data.frame(fv=BS_fit$fit, lowCI=NA,upCI=NA)
+BSm<-data.frame(fv=ilink(BS_fit$fit), lowCI=NA,upCI=NA)
 
 ### 0.05 CI
-BSm$lowCI<-BS_fit$fit-(2*BS_fit$se.fit)
-
-### set all values that are negativ to NA
-BSm[BSm$lowCI<0,]$lowCI <- 0
+BSm$lowCI<-ilink(BS_fit$fit-(2*BS_fit$se.fit))
 
 ### 0.95 CI
-BSm$upCI<-BS_fit$fit+(2*BS_fit$se.fit)
+BSm$upCI<-ilink(BS_fit$fit+(2*BS_fit$se.fit))
 
-### ### set all values greater than one to NA
-BSm[BSm$upCI>1,]$upCI <- 1
 
 ### get unscaled x axis
 BSm$x<-seq(from= min(efdat_bwa$SQRT_BS), to=max(efdat_bwa$SQRT_BS), length.out = 200)
@@ -669,7 +658,9 @@ BSplot<- ggplot(data=BSm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_BS), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 BSplot
 
@@ -699,22 +690,17 @@ nwdtpb<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-PD_fit<-predict(carc_mod, newdata=nwdtpb,type="response", se.fit=TRUE)
+PD_fit<-predict(carc_mod, newdata=nwdtpb, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-PDm<-data.frame(fv=PD_fit$fit, lowCI=NA,upCI=NA,x=NA)
+PDm<-data.frame(fv=ilink(PD_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-PDm$lowCI<-PD_fit$fit-(2*PD_fit$se.fit)
-
-### set all values that are negativ to NA
-PDm[PDm$lowCI<0,]$lowCI <- 0
+PDm$lowCI<-ilink(PD_fit$fit-(2*PD_fit$se.fit))
 
 ### 0.95 CI
-PDm$upCI<-PD_fit$fit+(2*PD_fit$se.fit)
+PDm$upCI<-ilink(PD_fit$fit+(2*PD_fit$se.fit))
 
-### ### set all values greater than one to NA
-PDm[PDm$upCI>1,]$upCI <- 1
 
 ### get unscaled x axis
 PDm$x<-seq(from= min(efdat_bwa$SQRT_PD), to=max(efdat_bwa$SQRT_PD), length.out = 200)
@@ -732,7 +718,9 @@ PDplot<- ggplot(data=PDm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_PD), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 PDplot
 
@@ -761,22 +749,18 @@ nwdtle<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-LE_fit<-predict(carc_mod, newdata=nwdtle,type="response", se.fit=TRUE)
+LE_fit<-predict(carc_mod, newdata=nwdtle, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-LEm<-data.frame(fv=LE_fit$fit, lowCI=NA,upCI=NA,x=NA)
+LEm<-data.frame(fv=ilink(LE_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-LEm$lowCI<-LE_fit$fit-(2*LE_fit$se.fit)
+LEm$lowCI<-ilink(LE_fit$fit-(2*LE_fit$se.fit))
 
-### set all values that are negativ to NA
-LEm[LEm$lowCI<0,]$lowCI <- 0
 
 ### 0.95 CI
-LEm$upCI<-LE_fit$fit+(2*LE_fit$se.fit)
+LEm$upCI<-ilink(LE_fit$fit+(2*LE_fit$se.fit))
 
-### ### set all values greater than one to NA
-LEm[LEm$upCI>1,]$upCI <- 1
 
 ### get unscaled x axis
 LEm$x<-seq(from= min(efdat_bwa$SQRT_LE), to=max(efdat_bwa$SQRT_LE), length.out = 200)
@@ -784,7 +768,7 @@ LEm$x<-seq(from= min(efdat_bwa$SQRT_LE), to=max(efdat_bwa$SQRT_LE), length.out =
 #### conditional ggplot
 LEplot<- ggplot(data=LEm)+
   ylim(0, 1)+
-  xlab("Fitted probability of living elephants (P)")+
+  xlab("Estimated probability of living elephants (P)")+
   ylab("Estimated probability")+
   geom_ribbon(aes(x=LEm$x, ymax=LEm$upCI, ymin=LEm$lowCI), fill="grey50", alpha=.5) +
   geom_line(aes(x=LEm$x, y=LEm$fv),col="grey10")+
@@ -793,7 +777,9 @@ LEplot<- ggplot(data=LEm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_LE), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 LEplot
 
@@ -822,22 +808,18 @@ nwdtsl<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-SL_fit<-predict(carc_mod, newdata=nwdtsl,type="response", se.fit=TRUE)
+SL_fit<-predict(carc_mod, newdata=nwdtsl, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-SLm<-data.frame(fv=SL_fit$fit, lowCI=NA,upCI=NA,x=NA)
+SLm<-data.frame(fv=ilink(SL_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-SLm$lowCI<-SL_fit$fit-(2*SL_fit$se.fit)
+SLm$lowCI<-ilink(SL_fit$fit-(2*SL_fit$se.fit))
 
-### set all values that are negativ to NA
-SLm[SLm$lowCI<0,]$lowCI <- 0
 
 ### 0.95 CI
-SLm$upCI<-SL_fit$fit+(2*SL_fit$se.fit)
+SLm$upCI<-ilink(SL_fit$fit+(2*SL_fit$se.fit))
 
-### ### set all values greater than one to NA
-SLm[SLm$upCI>1,]$upCI <- 1
 
 
 ### get unscaled x axis
@@ -857,7 +839,9 @@ SLplot<- ggplot(data=SLm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_SL), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 SLplot
 
@@ -885,22 +869,16 @@ nwdtdr<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-DR_fit<-predict(carc_mod, newdata=nwdtdr,type="response", se.fit=TRUE)
+DR_fit<-predict(carc_mod, newdata=nwdtdr, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-DRm<-data.frame(fv=DR_fit$fit, lowCI=NA,upCI=NA,x=NA)
+DRm<-data.frame(fv=ilink(DR_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-DRm$lowCI<-DR_fit$fit-(2*DR_fit$se.fit)
-
-### set all values that are negativ to NA
-DRm[DRm$lowCI<0,]$lowCI <- 0
+DRm$lowCI<-ilink(DR_fit$fit-(2*DR_fit$se.fit))
 
 ### 0.95 CI
-DRm$upCI<-DR_fit$fit+(2*DR_fit$se.fit)
-
-### ### set all values greater than one to NA
-DRm[DRm$upCI>1,]$upCI <- 1
+DRm$upCI<-ilink(DR_fit$fit+(2*DR_fit$se.fit))
 
 ### get unscaled x axis
 DRm$x<-seq(from= min(efdat_bwa$SQRT_DR)/1000, to=max(efdat_bwa$SQRT_DR)/1000, length.out = 200)
@@ -919,7 +897,9 @@ DRplot<- ggplot(data=DRm)+
   geom_rug(data=efdat_bwa, aes((x=efdat_bwa$SQRT_DR/1000)), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 DRplot
 
@@ -948,22 +928,19 @@ nwdttc<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-TC_fit<-predict(carc_mod, newdata=nwdttc,type="response", se.fit=TRUE)
+TC_fit<-predict(carc_mod, newdata=nwdttc, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-TCm<-data.frame(fv=TC_fit$fit, lowCI=NA,upCI=NA,x=NA)
+TCm<-data.frame(fv=ilink(TC_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-TCm$lowCI<-TC_fit$fit-(2*TC_fit$se.fit)
+TCm$lowCI<-ilink(TC_fit$fit-(2*TC_fit$se.fit))
 
-### set all values that are negativ to NA
-TCm[TCm$lowCI<0,]$lowCI <- 0
 
 ### 0.95 CI
-TCm$upCI<-TC_fit$fit+(2*TC_fit$se.fit)
+TCm$upCI<-ilink(TC_fit$fit+(2*TC_fit$se.fit))
 
-### ### set all values greater than one to NA
-TCm[TCm$upCI>1,]$upCI <- 1
+
 
 ### get unscaled x axis
 TCm$x<-seq(from= min(efdat_bwa$SQRT_TC300), to=max(efdat_bwa$SQRT_TC300), length.out = 200)
@@ -983,7 +960,9 @@ TCplot<- ggplot(data=TCm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_TC300), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 TCplot
 
@@ -1011,22 +990,17 @@ nwdtdw<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-DW_fit<-predict(carc_mod, newdata=nwdtdw,type="response", se.fit=TRUE)
+DW_fit<-predict(carc_mod, newdata=nwdtdw, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-DWm<-data.frame(fv=DW_fit$fit, lowCI=NA,upCI=NA,x=NA)
+DWm<-data.frame(fv=ilink(DW_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-DWm$lowCI<-DW_fit$fit-(2*DW_fit$se.fit)
+DWm$lowCI<-ilink(DW_fit$fit-(2*DW_fit$se.fit))
 
-### set all values that are negativ to NA
-DWm[DWm$lowCI<0,]$lowCI <- 0
 
 ### 0.95 CI
-DWm$upCI<-DW_fit$fit+(2*DW_fit$se.fit)
-
-### ### set all values greater than one to NA
-DWm[DWm$upCI>1,]$upCI <- 1
+DWm$upCI<-ilink(DW_fit$fit+(2*DW_fit$se.fit))
 
 ### get unscaled x axis
 DWm$x<-seq(from= min(efdat_bwa$SQRT_DW), to=max(efdat_bwa$SQRT_DW), length.out = 200)
@@ -1045,7 +1019,9 @@ DWplot<- ggplot(data=DWm)+
   geom_rug(data=efdat_bwa, aes(x=efdat_bwa$SQRT_DW), col="grey50", size=0.1, sides="b")+
   theme(axis.text=element_text(size=18,colour="black"),
         axis.title=element_text(size=16),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio=1)
 
 DWplot
 
@@ -1075,23 +1051,18 @@ nwdtpa<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-PA_fit<-predict(carc_mod, newdata=nwdtpa,type="response", se.fit=TRUE)
+PA_fit<-predict(carc_mod, newdata=nwdtpa, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-PAm<-data.frame(fv=PA_fit$fit, lowCI=NA,upCI=NA,x=NA)
+PAm<-data.frame(fv=ilink(PA_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-PAm$lowCI<-PA_fit$fit-(2*PA_fit$se.fit)
+PAm$lowCI<-ilink(PA_fit$fit-(2*PA_fit$se.fit))
 
-### set all values that are negativ to NA
-PAm[PAm$lowCI<0,]$lowCI <- 0
+
 
 ### 0.95 CI
-PAm$upCI<-PA_fit$fit+(2*PA_fit$se.fit)
-
-### ### set all values greater than one to NA
-PAm[PAm$upCI>1,]$upCI <- 1
-
+PAm$upCI<-ilink(PA_fit$fit+(2*PA_fit$se.fit))
 
 ### get unscaled x axis
 PAm$x<-unique(efdat_bwa$PA)
@@ -1118,7 +1089,9 @@ PAplot <- ggplot() +
   annotate("text", x=PAm$x ,y=1,label=c("8707","3160","2","514","2"))+
   theme(axis.text=element_text(size=10,colour="black"),
         axis.title=element_text(size=12),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio = 1)
 
 
 
@@ -1148,22 +1121,16 @@ nwdtlc<-data.frame(x=mean(bwa_scaled$x), y=mean(bwa_scaled$y),
 )
 
 #predict on newdata
-LC_fit<-predict(carc_mod, newdata=nwdtlc,type="response", se.fit=TRUE)
+LC_fit<-predict(carc_mod, newdata=nwdtlc, se.fit=TRUE)
 
 #call dataframe to store fitted values, 0.05 CI and 0.95 CI
-LCm<-data.frame(fv=LC_fit$fit, lowCI=NA,upCI=NA,x=NA)
+LCm<-data.frame(fv=ilink(LC_fit$fit), lowCI=NA,upCI=NA,x=NA)
 
 ### 0.05 CI
-LCm$lowCI<-LC_fit$fit-(2*LC_fit$se.fit)
-
-### set all values that are negativ to NA
-LCm[LCm$lowCI<0,]$lowCI <- 0
+LCm$lowCI<-ilink(LC_fit$fit-(2*LC_fit$se.fit))
 
 ### 0.95 CI
-LCm$upCI<-LC_fit$fit+(2*LC_fit$se.fit)
-
-### ### set all values greater than one to NA
-LCm[LCm$upCI>1,]$upCI <- 1
+LCm$upCI<-ilink(LC_fit$fit+(2*LC_fit$se.fit))
 
 
 ### get unscaled x axis
@@ -1202,33 +1169,14 @@ LCplot <- ggplot() +
   annotate("text", x=LCm$x ,y=1,label=c("8735","560","175","2253","623","16","23"))+
   theme(axis.text=element_text(size=10,colour="black"),
         axis.title=element_text(size=12),
-        panel.background = element_rect(fill = 'white', colour = 'white'))
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        aspect.ratio = 1)
 
 LCplot
 
 
 
-############################################################# 
-###### combine all continous effect plots to one pdf ######## 
-#############################################################  
-
-
-
-grid.arrange(ELplot,  SLplot, NDVIplot ,
-             TCplot, VCplot , BSplot, 
-             Tplot , TPAplot, DWplot ,
-             DCplot, DRplot,  PDplot,  LEplot  )
-
-###############################################################
-###### combine all categorical effect plots to one pdf ########
-############################################################### 
-
-g2 <- ggplotGrob(PAplot)
-g3 <- ggplotGrob(LCplot)
-g <- cbind(g2, g3, size = "first")
-g$heights <- unit.pmax(g2$heights, g3$heights)
-grid.newpage()
-grid.draw(g)
 
 
 #####################################################

@@ -12,10 +12,12 @@ library(sf)
 library(ggplot2)
 library(ggspatial)
 library(gbm)
+library(grid)
 library(gridExtra)
 library(rnaturalearth)
 library(scales)
 library(pROC)
+library(ncf)
 
 ##################################
 ##### set working directory ######
@@ -152,7 +154,8 @@ all_preds_cv_gbm <-unlist(all.preds)
 
 
 ### fit glm/gam with natural spline of preds vs obs and plot with 95% CI
-calibrate.plot(datale$BIN,all_preds_cv_gbm,shade.col="grey50")
+par(pty="s")
+calibrate.plot(datale$BIN,all_preds_cv_gbm,shade.col="grey50",asp=1)
 
 #####################
 #### preds vs obs ### old
@@ -402,7 +405,7 @@ plot(corlog_ZWE2, ylim=c(-1,1))
 ### colorvector
 colvec<-rainbow(11)
 
-par(col=alpha(colvec[1],0.7),mar=c(5.1,5.1,4.1,2.1)) ### add some transparency
+par(col=alpha(colvec[1],0.7),mar=c(5.1,5.1,4.1,2.1), pty="s") ### add some transparency
 plot(corlog_ago, xlim=c(0,900),ylim=c(-1,1),col=colvec[1], main="", cex.axis = 2, cex.lab = 2)
 par(new=TRUE, col= alpha(colvec[2], 0.7))
 plot(corlog_bwa, xlim=c(0,900),ylim=c(-1,1), xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
@@ -463,7 +466,7 @@ for (i in 1:length(sites)){
     geom_sf(data = sfpreddt[sfpreddt$Site==sites[i],], aes(fill = resi ,color= resi)) + 
     scale_colour_gradient2(low = "red",mid="grey80",high = "blue", breaks=c(-1,0,1),guide=FALSE) + 
     scale_fill_gradient2(low = "red",mid="grey80",high = "blue", breaks=c(-1,0,1),name="Residuals") +
-    xlab("Longitude") + ylab("Latitude") +
+   
     
     
     annotation_scale(location = "tr", width_hint = 0.25) +
@@ -472,18 +475,12 @@ for (i in 1:length(sites)){
                            style = north_arrow_fancy_orienteering) +
     
     theme(panel.background = element_rect(fill="white"),
-          axis.text=element_text(size=16),
-          axis.title=element_text(size=16),
-          axis.text.x = element_text(colour = "black"),
-          axis.text.y = element_text(colour = "black"))
-  
-  
-  
-  
+          panel.border = element_rect(colour = "black", fill=NA, size=1),
+          axis.ticks=element_blank())
 }
 
 
-pdf("/ma_elephant/R/illustrations/comb_2.pdf", onefile = TRUE)
+pdf("/home/wurst/Documents/Master/ma_elephant/R/illustrations/comb_2.pdf", onefile = TRUE)
 for (i in seq(length(p))) {
   do.call("grid.arrange", p[[i]])  
 }
@@ -547,6 +544,7 @@ fv_gbm_le<-ggplot(data = bots) +
         axis.title=element_text(size=14),
         axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black"),
+        
         legend.position = c(1.1, 0.3))+
   guides(shape = guide_legend(override.aes = list(size = 2)))
 

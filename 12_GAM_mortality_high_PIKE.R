@@ -159,7 +159,7 @@ corlog5<-ncf::correlog(x=sp::coordinates(hp_cor_5)[,1],
 
 ### call plot
 
-par(col=alpha("red",0.7)) ### add some transparency
+par(col=alpha("red",0.7),pty="s") ### add some transparency
 plot(corlog1, xlim=c(0,400),ylim=c(-1,1),col="red", main="")
 par(new=TRUE, col= alpha("blue", 0.7))
 plot(corlog2, xlim=c(0,400),ylim=c(-1,1), xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
@@ -274,8 +274,8 @@ mean(eval_mod_car_gam_hp[,1], na.rm=TRUE)
 ### calibration curve ###
 #########################
 
-
-calibrate.plot(data_c$COUNT_c,data_c$gam_preds)
+par(pty="s")
+calibrate.plot(data_c$COUNT_c,data_c$gam_preds,shade.col="grey50", asp=1)
 
 
 

@@ -9,6 +9,8 @@ library(Hmisc)
 library(sf)
 library(pROC)
 library(sp)
+library(ncf)
+
 
 
 ##################################
@@ -239,10 +241,10 @@ corlog2<-ncf::correlog(x=sp::coordinates(BWA_2)[,1],y=sp::coordinates(BWA_2)[,2]
 
 
 ### call plot
-par(col=alpha(colvec[1],0.7)) ### add some transparency
+par(col=alpha(colvec[1],0.9), pty="s") ### add some transparency
 plot(corlog1, xlim=c(0,500),ylim=c(-1,1),col=colvec[1], main="")
 par(new=TRUE, col= alpha(colvec[2], 0.7))
-plot(corlog2, xlim=c(0,500),ylim=c(-1,1), xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
+plot(corlog2, xlim=c(0,500),ylim=c(-1,1),xaxt="n" ,yaxt="n", xlab="", ylab="",main="")
 box(col="black")
 
 
@@ -348,10 +350,10 @@ mean(eval_mod_car_gam[,1], na.rm=TRUE)
 ### calibration curve ###
 #########################
 
+par(pty="s")
+calibrate.plot(bwa_scaled$COUNT_c,bwa_scaled$gam_preds,shade.col="grey50", asp=1)
 
-calibrate.plot(bwa_scaled$COUNT_c,bwa_scaled$gam_preds,shade.col="grey50")
 
-?calibrate.plot
 
 
 #####################

@@ -128,7 +128,8 @@ studyarea<-  ggplot(data=africa)+
 theme(panel.background = element_rect(fill="white"),axis.text=element_text(size=15),
       axis.title=element_text(size=15),
       axis.text.x = element_text(colour = "black"),
-      axis.text.y = element_text(colour = "black"))
+      axis.text.y = element_text(colour = "black"),
+      panel.border = element_rect(colour = "black", fill=NA, size=1))
   
  
 ### save plot
